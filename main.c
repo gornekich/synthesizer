@@ -63,8 +63,8 @@ int main() {
     NVIC_SetPriorityGrouping(0);
 
     xTaskCreateStatic(leds_manager, "LEDS_MAN", LEDS_MAN_STACK_DEPTH,
-                      NULL, 1, audio_dac_manager_ts, &audio_dac_manager_tb);
-    xTaskCreateStatic(audio_dac_manager, "AUDIO_DAC_MAN", CODEC_MAN_STACK_DEPTH,
+                      NULL, 2, leds_manager_ts, &leds_manager_tb);
+    xTaskCreateStatic(audio_dac_manager, "AUDIO_DAC_MAN", AUDIO_DAC_STACK_DEPTH,
                       NULL, 2, audio_dac_manager_ts, &audio_dac_manager_tb);
 
     vTaskStartScheduler();

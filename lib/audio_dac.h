@@ -4,12 +4,12 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
-#define CODEC_MAN_STACK_DEPTH    256
+#define AUDIO_DAC_STACK_DEPTH    256
 
 /*
  * Memory for audio codec task
  */
-StackType_t audio_dac_manager_ts[CODEC_MAN_STACK_DEPTH];
+StackType_t audio_dac_manager_ts[AUDIO_DAC_STACK_DEPTH];
 StaticTask_t audio_dac_manager_tb;
 
 /*
