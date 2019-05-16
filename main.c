@@ -37,9 +37,13 @@ static void rcc_config()
 
     /* Main PLL configuration and activation */
     LL_RCC_PLL_ConfigDomain_SYS(LL_RCC_PLLSOURCE_HSE, LL_RCC_PLLM_DIV_8,
-                    336, LL_RCC_PLLP_DIV_2);
+                                336, LL_RCC_PLLP_DIV_2);
+    LL_RCC_PLLI2S_ConfigDomain_I2S(LL_RCC_PLLSOURCE_HSE, LL_RCC_PLLI2SM_DIV_8,
+                                   344, LL_RCC_PLLI2SR_DIV_2);
     LL_RCC_PLL_Enable();
     while (LL_RCC_PLL_IsReady() != 1);
+    LL_RCC_PLLI2S_Enable();
+    while(LL_RCC_PLLI2S_IsReady() != 1);
 
     /* Sysclk activation on the main PLL */
     LL_RCC_SetAHBPrescaler(LL_RCC_SYSCLK_DIV_1);
@@ -63,7 +67,7 @@ int main() {
     NVIC_SetPriorityGrouping(0);
 
     xTaskCreateStatic(leds_manager, "LEDS_MAN", LEDS_MAN_STACK_DEPTH,
-                      NULL, 2, leds_manager_ts, &leds_manager_tb);
+                      NULL, 1, leds_manager_ts, &leds_manager_tb);
     xTaskCreateStatic(audio_dac_manager, "AUDIO_DAC_MAN", AUDIO_DAC_STACK_DEPTH,
                       NULL, 2, audio_dac_manager_ts, &audio_dac_manager_tb);
 
