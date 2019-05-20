@@ -14,7 +14,11 @@
 // extern uint16_t *AUDIO_SAMPLE;
 
 typedef struct {
-        uint16_t *audio_src;
+        uint16_t buff1[512];
+        uint16_t buff2[512];
+        uint16_t *cur_source;
+        uint8_t start_processing;
+        uint8_t cur_state;
         uint32_t audio_size;
 } audio_ctrl_t;
 

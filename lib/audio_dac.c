@@ -7,12 +7,12 @@
 
 #include "arm_math.h"
 
-extern uint16_t AUDIO_SAMPLE[];
+// extern uint16_t AUDIO_SAMPLE[];
 extern float32_t sinTable_f32[];
 /*
  * Private control variable
  */
-static audio_ctrl_t *audio_ctrl;
+static audio_ctrl_t audio_ctrl;
 
 /*
  * Private functions
@@ -125,46 +125,48 @@ static void audio_periph_config(void)
     LL_I2S_SetPrescalerLinear(AUDIO_I2S, AUDIO_I2S_PSC);
     LL_I2S_SetPrescalerParity(AUDIO_I2S, AUDIO_I2S_PSC_PARITY);
     LL_I2S_EnableMasterClock(AUDIO_I2S);
-    // LL_I2S_EnableDMAReq_TX(AUDIO_I2S);
+    LL_I2S_EnableDMAReq_TX(AUDIO_I2S);
     LL_I2S_Enable(AUDIO_I2S);
     /*
      * Audio I2S DMA transmition configuration
      */
-    // LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_DMA1);
-    // LL_DMA_SetChannelSelection(AUDIO_DMA, AUDIO_DMA_STREAM, AUDIO_DMA_CHANNEL);
-    // LL_DMA_ConfigAddresses(AUDIO_DMA, AUDIO_DMA_STREAM,
-    //                        (uint32_t)(&AUDIO_SAMPLE[58]),
-    //                        AUDIO_DMA_DST_ADDR, AUDIO_DMA_DIRECTION);
-    // LL_DMA_SetDataLength(AUDIO_DMA, AUDIO_DMA_STREAM, 500000);
-    // LL_DMA_SetPeriphSize(AUDIO_DMA, AUDIO_DMA_STREAM,
-    //                      LL_DMA_PDATAALIGN_HALFWORD);
-    // LL_DMA_SetMemorySize(AUDIO_DMA, AUDIO_DMA_STREAM,
-    //                      LL_DMA_MDATAALIGN_HALFWORD);
-    // LL_DMA_SetMode(AUDIO_DMA, AUDIO_DMA_STREAM, AUDIO_DMA_MODE);
-    // LL_DMA_SetMemoryIncMode(AUDIO_DMA, AUDIO_DMA_STREAM,
-    //                         AUDIO_DMA_MEM_INC_MODE);
-    // LL_DMA_SetPeriphIncMode(AUDIO_DMA, AUDIO_DMA_STREAM,
-    //                         AUDIO_DMA_PERIPH_INC_MODE);
-    // LL_DMA_SetStreamPriorityLevel(AUDIO_DMA, AUDIO_DMA_STREAM,
-    //                               LL_DMA_PRIORITY_VERYHIGH);
-    // LL_DMA_EnableIT_TC(AUDIO_DMA, AUDIO_DMA_STREAM);
-    // NVIC_SetPriority(AUDIO_DMA_STREAM_IRQN, AUDIO_DMA_STREAM_IRQN_PRIORITY);
+    LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_DMA1);
+    LL_DMA_SetChannelSelection(AUDIO_DMA, AUDIO_DMA_STREAM, AUDIO_DMA_CHANNEL);
+    LL_DMA_SetPeriphAddress(AUDIO_DMA, AUDIO_DMA_STREAM, AUDIO_DMA_DST_ADDR);
+    LL_DMA_SetMemoryAddress(AUDIO_DMA, AUDIO_DMA_STREAM,
+                            (uint32_t) audio_ctrl.buff1);
+    LL_DMA_SetDataTransferDirection(AUDIO_DMA, AUDIO_DMA_STREAM,
+                                    AUDIO_DMA_DIRECTION);
+    LL_DMA_SetDataLength(AUDIO_DMA, AUDIO_DMA_STREAM, 512);
+    LL_DMA_SetPeriphSize(AUDIO_DMA, AUDIO_DMA_STREAM,
+                         LL_DMA_PDATAALIGN_HALFWORD);
+    LL_DMA_SetMemorySize(AUDIO_DMA, AUDIO_DMA_STREAM,
+                         LL_DMA_MDATAALIGN_HALFWORD);
+    LL_DMA_SetMode(AUDIO_DMA, AUDIO_DMA_STREAM, AUDIO_DMA_MODE);
+    LL_DMA_SetMemoryIncMode(AUDIO_DMA, AUDIO_DMA_STREAM,
+                            AUDIO_DMA_MEM_INC_MODE);
+    LL_DMA_SetPeriphIncMode(AUDIO_DMA, AUDIO_DMA_STREAM,
+                            AUDIO_DMA_PERIPH_INC_MODE);
+    LL_DMA_SetStreamPriorityLevel(AUDIO_DMA, AUDIO_DMA_STREAM,
+                                  LL_DMA_PRIORITY_VERYHIGH);
+    LL_DMA_EnableIT_TC(AUDIO_DMA, AUDIO_DMA_STREAM);
+    NVIC_SetPriority(AUDIO_DMA_STREAM_IRQN, AUDIO_DMA_STREAM_IRQN_PRIORITY);
     NVIC_EnableIRQ(AUDIO_DMA_STREAM_IRQN);
     return;
 }
 
-static void play_wav(void)
-{
-    uint32_t i = 0;
+// static void play_wav(void)
+// {
+//     uint32_t i = 0;
 
-    for (i = 58; i < 500000; i++)
-    {
-        LL_I2S_TransmitData16(AUDIO_I2S, AUDIO_SAMPLE[i]);
-        while (!LL_I2S_IsActiveFlag_TXE(AUDIO_I2S));
-        LL_I2S_TransmitData16(AUDIO_I2S, AUDIO_SAMPLE[i]);
-        while (!LL_I2S_IsActiveFlag_TXE(AUDIO_I2S));
-    }
-}
+//     for (i = 58; i < 500000; i++)
+//     {
+//         LL_I2S_TransmitData16(AUDIO_I2S, AUDIO_SAMPLE[i]);
+//         while (!LL_I2S_IsActiveFlag_TXE(AUDIO_I2S));
+//         LL_I2S_TransmitData16(AUDIO_I2S, AUDIO_SAMPLE[i]);
+//         while (!LL_I2S_IsActiveFlag_TXE(AUDIO_I2S));
+//     }
+// }
 
 static void transmit_i2s(void)
 {
@@ -181,7 +183,9 @@ static void transmit_i2s(void)
         // rad =  2.0 * 3.1415 * freq * time;
         // sample_f = 0.5 * (arm_sin_f32(rad) + 1.0); // data from [0, 1]
         // sample = (uint16_t) (sample_f * 20000.0);
-        sample = (uint16_t) (0.5 * (sinTable_f32[i%512] + 1) * 32657.0);
+        int j = 1;
+        while(j--);
+        sample = (uint16_t) (0.5 * (sinTable_f32[i%512] + 1) * 32768);
 
         LL_I2S_TransmitData16(AUDIO_I2S, sample);
         while (!LL_I2S_IsActiveFlag_TXE(AUDIO_I2S));
@@ -325,13 +329,37 @@ void audio_dac_manager(void *args)
 {
     (void) args;
 
+    int i = 0;
+    int samples = AUDIO_FREQUENCY;
+    float time_step = 1 / (float) samples;
+    float time = 0.0;
+    uint16_t sample = 0;
+    audio_ctrl.cur_state = 0;
+
     codec_hw_config();
-    // audio_play();
+    for (i = 0; i < 512; i++) {
+
+        sample = (uint16_t) (0.5 * (sinTable_f32[i%512] + 1) * 32768);
+        audio_ctrl.buff1[i] = sample;
+
+        time += time_step;
+    }
+    audio_ctrl.cur_state = 2;
+    audio_ctrl.cur_source = audio_ctrl.buff2;
+    audio_ctrl.start_processing = 1;
+
+    audio_play();
 
     while (1) {
-        // transmit_i2s();
-        play_wav();
-        //vTaskDelay(30);
+        if (audio_ctrl.start_processing == 1) {
+            for (i = 0; i < 512; i++) {
+                sample = (uint16_t) (0.5 * (sinTable_f32[i%512] + 1) * 32768);
+                audio_ctrl.cur_source[i] = sample;
+                time += time_step;
+            }
+            audio_ctrl.start_processing = 0;
+            LL_GPIO_TogglePin(LED_PORT, LED_GREEN_PIN);
+        }
     }
 }
 
@@ -347,9 +375,22 @@ void DMA1_Stream7_IRQHandler(void)
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 
         if (LL_DMA_IsActiveFlag_TC7(AUDIO_DMA)) {
-                LL_DMA_DisableStream(AUDIO_DMA, AUDIO_DMA_STREAM);
-                LL_DMA_ClearFlag_TC7(AUDIO_DMA);
-                LL_DMA_EnableStream(AUDIO_DMA, AUDIO_DMA_STREAM);
+            LL_DMA_ClearFlag_TC7(AUDIO_DMA);
+            LL_DMA_DisableStream(AUDIO_DMA, AUDIO_DMA_STREAM);
+            if (audio_ctrl.cur_state == 1) {
+                LL_DMA_SetMemoryAddress(AUDIO_DMA, AUDIO_DMA_STREAM,
+                                (uint32_t) audio_ctrl.buff1);
+                audio_ctrl.cur_state = 2;
+                audio_ctrl.cur_source = audio_ctrl.buff2;
+            }
+            if (audio_ctrl.cur_state == 2) {
+                LL_DMA_SetMemoryAddress(AUDIO_DMA, AUDIO_DMA_STREAM,
+                                (uint32_t) audio_ctrl.buff2);
+                audio_ctrl.cur_state = 1;
+                audio_ctrl.cur_source = audio_ctrl.buff1;
+            }
+            audio_ctrl.start_processing = 1;
         }
+        LL_DMA_EnableStream(AUDIO_DMA, AUDIO_DMA_STREAM);
         portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
