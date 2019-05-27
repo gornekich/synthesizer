@@ -360,11 +360,12 @@ void audio_dac_manager(void *args)
 
     while (1) {
         if (audio_ctrl.start_processing == 1) {
+            // vTaskDelay(1);
             for (i = 0; i < BUFF_SIZE; i++) {
-                int f = 20;
+                int f = 103;
                 while(f--);
-                k += 1;
-                audio_ctrl.cur_source[i] = sinTable_q15[k%512]; //modular_step();
+                audio_ctrl.cur_source[i] = sinTable_q15[2*k%512]; //modular_step();
+                k = (k + 1) % 512;
                 // sample = (uint16_t) (0.5 * (sinTable_f32[i%512] + 1) * 32767);
             }
             audio_ctrl.start_processing = 0;

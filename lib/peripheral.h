@@ -26,7 +26,6 @@
  * Audio dac I2S configuration
  */
 #define AUDIO_I2S                       SPI3
-#define AUDIO_I2S_FREQ                  LL_I2S_AUDIOFREQ_96K
 #define AUDIO_I2S_DATA_FORMAT           LL_I2S_DATAFORMAT_16B
 #define AUDIO_I2S_STANDART              LL_I2S_STANDARD_PHILIPS
 #define AUDIO_I2S_PSC                   3U

@@ -6,10 +6,10 @@
 
 #define AUDIO_DAC_ADDRESS        0x94
 #define AUDIO_DAC_STANDART       0x04
-#define AUDIO_DEFAULT_VOLUME     150
+#define AUDIO_DEFAULT_VOLUME     200
 #define AUDIO_FREQUENCY          48000
 
-#define BUFF_SIZE				 4096
+#define BUFF_SIZE                4096
 
 #define AUDIO_DAC_STACK_DEPTH    256
 
