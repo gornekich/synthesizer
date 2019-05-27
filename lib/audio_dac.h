@@ -6,16 +6,18 @@
 
 #define AUDIO_DAC_ADDRESS        0x94
 #define AUDIO_DAC_STANDART       0x04
-#define AUDIO_DEFAULT_VOLUME     200
+#define AUDIO_DEFAULT_VOLUME     150
 #define AUDIO_FREQUENCY          48000
+
+#define BUFF_SIZE				 4096
 
 #define AUDIO_DAC_STACK_DEPTH    256
 
 // extern uint16_t *AUDIO_SAMPLE;
 
 typedef struct {
-        uint16_t buff1[512];
-        uint16_t buff2[512];
+        uint16_t buff1[BUFF_SIZE];
+        uint16_t buff2[BUFF_SIZE];
         uint16_t *cur_source;
         uint8_t start_processing;
         uint8_t cur_state;
