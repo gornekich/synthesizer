@@ -23,8 +23,12 @@ SOURCES_C += $(SOURCES_CORE)
 SOURCES_C += $(SOURCES_PERIPH)
 SOURCES_C += $(SOURCES_ARM_MATH)
 
-SOURCES = $(SOURCES_S) $(SOURCES_C)
-OBJS = $(SOURCES_S:.s=.o) $(SOURCES_C:.c=.o)
+SOURCES_SYNTH = $(wildcard synth/*.cpp)
+
+SOURCES_CPP = $(SOURCES_SYNTH)
+
+SOURCES = $(SOURCES_S) $(SOURCES_C) $(SOURCES_CPP)
+OBJS = $(SOURCES_S:.s=.o) $(SOURCES_C:.c=.o) $(SOURCES_CPP:.cpp=.o)
 
 # Includes and Defines
 
@@ -32,11 +36,14 @@ INC_RTOS = -Ifreertos -Ifreertos/include -Ifreertos/portable/GCC/ARM_CM4F
 INC_CORE = -Icore
 INC_PERIPH = -Iplib
 INC_ARM_MATH = -Imath
+INC_SYNTH = -Isynth
 INCLUDES = -Iold -Ilib
 INCLUDES += $(INC_RTOS)
 INCLUDES += $(INC_CORE)
 INCLUDES += $(INC_PERIPH)
 INCLUDES += $(INC_ARM_MATH)
+
+INCLUDES_CPP = $(INC_SYNTH)
 
 DEFINES = -DSTM32 -DSTM32F4 -DSTM32F407xx -DHEAP_SIZE=$(HEAP_SIZE)
 DEFINES += -DARM_MATH_CM4
@@ -46,9 +53,10 @@ DEFINES += -DARM_MATH_CM4
 PREFIX = arm-none-eabi
 
 CC = $(PREFIX)-gcc
+CXX = $(PREFIX)-c++
 AS = $(PREFIX)-as
 AR = $(PREFIX)-ar
-LD = $(PREFIX)-gcc
+LD = $(PREFIX)-c++
 NM = $(PREFIX)-nm
 OBJCOPY = $(PREFIX)-objcopy
 OBJDUMP = $(PREFIX)-objdump
@@ -63,13 +71,15 @@ OPENOCD=openocd
 MCUFLAGS = -mcpu=cortex-m4 -mlittle-endian -mfloat-abi=hard -mfpu=fpv4-sp-d16 \
 	   -mthumb -fsingle-precision-constant -mno-unaligned-access
 
-DEBUG_OPTIMIZE_FLAGS = -O0 -ggdb -gdwarf-2
+DEBUG_OPTIMIZE_FLAGS = -O0 #-ggdb -gdwarf-2
 
 CFLAGS = -Wall -Wextra
 CFLAGS_EXTRA = -nostartfiles -nodefaultlibs -nostdlib\
 	       -fdata-sections -ffunction-sections
 
-CFLAGS += $(DEFINES) $(MCUFLAGS) $(DEBUG_OPTIMIZE_FLAGS) $(CFLAGS_EXTRA) $(INCLUDES)
+CFLAGS += $(DEFINES) $(MCUFLAGS) $(DEBUG_OPTIMIZE_FLAGS) $(CFLAGS_EXTRA) $(INCLUDES) $(INCLUDES_CPP)
+
+CXXFLAGS = $(CFLAGS)
 
 LDFLAGS = -static $(MCUFLAGS) -Wl,--start-group -lgcc -lc -lg -Wl,--end-group \
 	  -Wl,--gc-sections -T STM32F407VGTx_FLASH.ld -specs=nano.specs \
