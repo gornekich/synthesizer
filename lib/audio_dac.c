@@ -7,6 +7,10 @@
 
 #include "arm_math.h"
 
+#include "ModularSynth.h"
+
+extern int16_t modular_step();
+
 // extern uint16_t AUDIO_SAMPLE[];
 extern float32_t sinTable_f32[];
 /*
@@ -137,7 +141,7 @@ static void audio_periph_config(void)
                             (uint32_t) audio_ctrl.buff1);
     LL_DMA_SetDataTransferDirection(AUDIO_DMA, AUDIO_DMA_STREAM,
                                     AUDIO_DMA_DIRECTION);
-    LL_DMA_SetDataLength(AUDIO_DMA, AUDIO_DMA_STREAM, 512);
+    LL_DMA_SetDataLength(AUDIO_DMA, AUDIO_DMA_STREAM, BUFF_SIZE);
     LL_DMA_SetPeriphSize(AUDIO_DMA, AUDIO_DMA_STREAM,
                          LL_DMA_PDATAALIGN_HALFWORD);
     LL_DMA_SetMemorySize(AUDIO_DMA, AUDIO_DMA_STREAM,
@@ -322,6 +326,8 @@ static void codec_hw_config(void)
  * Public functions
  */
 
+extern int16_t sinTable_q15[];
+
 /*
  * Audio manager task
  */
@@ -337,7 +343,7 @@ void audio_dac_manager(void *args)
     audio_ctrl.cur_state = 0;
 
     codec_hw_config();
-    for (i = 0; i < 512; i++) {
+    for (i = 0; i < BUFF_SIZE; i++) {
 
         sample = (uint16_t) (0.5 * (sinTable_f32[i%512] + 1) * 32768);
         audio_ctrl.buff1[i] = sample;
@@ -350,17 +356,22 @@ void audio_dac_manager(void *args)
 
     audio_play();
 
+    int k = 0;
+
     while (1) {
         if (audio_ctrl.start_processing == 1) {
-            for (i = 0; i < 512; i++) {
-                sample = (uint16_t) (0.5 * (sinTable_f32[i%512] + 1) * 32768);
-                audio_ctrl.cur_source[i] = sample;
-                time += time_step;
+            for (i = 0; i < BUFF_SIZE; i++) {
+                int f = 20;
+                while(f--);
+                k += 1;
+                audio_ctrl.cur_source[i] = sinTable_q15[k%512]; //modular_step();
+                // sample = (uint16_t) (0.5 * (sinTable_f32[i%512] + 1) * 32767);
             }
             audio_ctrl.start_processing = 0;
             LL_GPIO_TogglePin(LED_PORT, LED_GREEN_PIN);
         }
     }
+    audio_ctrl.cur_source[i] = (uint16_t) (0.5 * (modular_step() + 1) * 32768);
 }
 
 /*
